@@ -139,6 +139,12 @@ public class BorrowService {
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<BorrowResponse> getAllRecords() {
+        return borrowRecordRepository.findAll()
+                .stream().map(this::toResponse).collect(Collectors.toList());
+    }
+
     // -------------------------------------------------------
     // Mapper: BorrowRecord → BorrowResponse
     // -------------------------------------------------------

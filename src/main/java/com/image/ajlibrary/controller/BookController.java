@@ -55,12 +55,27 @@ public class BookController {
         return ResponseEntity.ok(bookService.getAvailableBooks());
     }
 
-    /**
-     * GET /api/books/{id}
-     * Get a book by ID.
-     */
     @GetMapping("/{id}")
     public ResponseEntity<Book> getBookById(@PathVariable Long id) {
         return ResponseEntity.ok(bookService.getBookById(id));
+    }
+
+    /**
+     * PUT /api/books/{id}
+     * Update an existing book.
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<Book> updateBook(@PathVariable Long id, @Valid @RequestBody BookRequest request) {
+        return ResponseEntity.ok(bookService.updateBook(id, request));
+    }
+
+    /**
+     * DELETE /api/books/{id}
+     * Delete an existing book.
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
+        bookService.deleteBook(id);
+        return ResponseEntity.noContent().build();
     }
 }

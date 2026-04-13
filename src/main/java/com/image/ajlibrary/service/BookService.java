@@ -3,6 +3,7 @@ package com.image.ajlibrary.service;
 import com.image.ajlibrary.dto.BookRequest;
 import com.image.ajlibrary.entity.Book;
 import com.image.ajlibrary.repository.BookRepository;
+import com.image.ajlibrary.repository.BorrowRecordRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +15,7 @@ import java.util.List;
 public class BookService {
 
     private final BookRepository bookRepository;
+    private final BorrowRecordRepository borrowRecordRepository;
 
     @Transactional
     public Book addBook(BookRequest request) {
@@ -77,5 +79,26 @@ public class BookService {
     public void incrementAvailableCopies(Book book) {
         book.setAvailableCopies(book.getAvailableCopies() + 1);
         bookRepository.save(book);
+    }
+
+    @Transactional
+    public Book updateBook(Long id, BookRequest request) {
+        Book book = getBookById(id);
+        book.setTitle(request.getTitle());
+        book.setAuthor(request.getAuthor());
+        book.setIsbn(request.getIsbn());
+        // Simple logic for copies: update total and available equally scaled
+        int diff = request.getTotalCopies() - book.getTotalCopies();
+        book.setTotalCopies(request.getTotalCopies());
+        book.setAvailableCopies(Math.max(0, book.getAvailableCopies() + diff));
+
+        return bookRepository.save(book);
+    }
+
+    @Transactional
+    public void deleteBook(Long id) {
+        Book book = getBookById(id);
+        borrowRecordRepository.deleteByBookId(id);
+        bookRepository.delete(book);
     }
 }

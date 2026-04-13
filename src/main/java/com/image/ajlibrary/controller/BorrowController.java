@@ -65,4 +65,13 @@ public class BorrowController {
     public ResponseEntity<List<BorrowResponse>> getAllOverdueRecords() {
         return ResponseEntity.ok(borrowService.getAllOverdueRecords());
     }
+
+    /**
+     * GET /api/borrow/all
+     * All borrow records across all users (admin view).
+     */
+    @GetMapping("/all")
+    public ResponseEntity<List<BorrowResponse>> getAllRecords() {
+        return ResponseEntity.ok(borrowService.getAllRecords());
+    }
 }

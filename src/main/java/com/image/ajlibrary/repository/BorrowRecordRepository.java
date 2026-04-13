@@ -24,4 +24,6 @@ public interface BorrowRecordRepository extends JpaRepository<BorrowRecord, Long
     // Find all overdue unreturned records
     @Query("SELECT br FROM BorrowRecord br WHERE br.status = 'ISSUED' AND br.dueDate < :today")
     List<BorrowRecord> findOverdueRecords(LocalDate today);
+
+    void deleteByBookId(Long bookId);
 }
