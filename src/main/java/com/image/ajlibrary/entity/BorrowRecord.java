@@ -37,7 +37,12 @@ public class BorrowRecord {
     private LocalDate returnDate;
 
     @Column(nullable = false)
-    private double fine;
+    @Builder.Default
+    private double fine = 0.0; // Fine amount
+
+    @Column(columnDefinition = "boolean default false")
+    @Builder.Default
+    private Boolean finePaid = false; // Tracks if the fine has been paid via Razorpay
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

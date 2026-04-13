@@ -168,6 +168,7 @@ public class BorrowService {
                 .dueDate(r.getDueDate())
                 .returnDate(r.getReturnDate())
                 .fine(displayFine)
+                .finePaid(r.getFinePaid())
                 .status(r.getStatus())
                 .overdue(overdue)
                 .build();

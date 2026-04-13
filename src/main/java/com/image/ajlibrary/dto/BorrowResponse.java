@@ -24,6 +24,7 @@ public class BorrowResponse {
     private LocalDate dueDate;
     private LocalDate returnDate;
     private double fine;
+    private Boolean finePaid;
     private BorrowStatus status;
     private boolean overdue;
 }
