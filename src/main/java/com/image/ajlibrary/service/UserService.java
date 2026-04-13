@@ -5,6 +5,7 @@ import com.image.ajlibrary.dto.RegisterRequest;
 import com.image.ajlibrary.entity.User;
 import com.image.ajlibrary.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,11 +16,10 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     /**
-     * Register a new user.
-     * NOTE: Password stored as plain text for simplicity.
-     * For production, encode with BCryptPasswordEncoder.
+     * Register a new user — password is BCrypt-encoded before saving.
      */
     @Transactional
     public User register(RegisterRequest request) {
@@ -32,7 +32,7 @@ public class UserService {
 
         User user = User.builder()
                 .username(request.getUsername())
-                .password(request.getPassword()) // TODO: BCrypt encode in production
+                .password(passwordEncoder.encode(request.getPassword()))
                 .email(request.getEmail())
                 .role(request.getRole())
                 .build();
@@ -41,8 +41,7 @@ public class UserService {
     }
 
     /**
-     * Authenticate a user by username and password.
-     * Returns the User object on success; throws on failure.
+     * Authenticate user — verifies raw password against BCrypt hash.
      */
     @Transactional(readOnly = true)
     public User login(LoginRequest request) {
@@ -50,7 +49,7 @@ public class UserService {
                 .orElseThrow(
                         () -> new IllegalArgumentException("User not found with username: " + request.getUsername()));
 
-        if (!user.getPassword().equals(request.getPassword())) {
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("Invalid password.");
         }
         return user;
