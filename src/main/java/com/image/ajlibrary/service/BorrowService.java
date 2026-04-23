@@ -18,6 +18,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
+// CO2 - Multithreading: FineNotificationService.sendFineAlert() runs on the
+//        library-async-pool thread (see AsyncConfig + FineNotificationService).
+
 @Service
 @RequiredArgsConstructor
 public class BorrowService {
@@ -25,6 +28,7 @@ public class BorrowService {
     private final BorrowRecordRepository borrowRecordRepository;
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
+    private final FineNotificationService fineNotificationService; // CO2 @Async
 
     @Value("${library.fine.per-day:2}")
     private double finePerDay;
@@ -75,6 +79,15 @@ public class BorrowService {
                 .build();
 
         BorrowRecord saved = borrowRecordRepository.save(record);
+
+        // CO2 - @Async: book-issued confirmation dispatched on a separate thread;
+        //        HTTP response returns immediately without waiting for this.
+        fineNotificationService.sendBookIssuedConfirmation(
+                user.getUsername(),
+                book.getTitle(),
+                dueDate.toString()
+        );
+
         return toResponse(saved);
     }
 
@@ -106,6 +119,17 @@ public class BorrowService {
         Book book = record.getBook();
         book.setAvailableCopies(book.getAvailableCopies() + 1);
         bookRepository.save(book);
+
+        // CO2 - @Async: if a fine was charged, send alert on a background thread.
+        //        The HTTP response to the client is NOT blocked by this operation.
+        if (fine > 0) {
+            fineNotificationService.sendFineAlert(
+                    record.getUser().getUsername(),
+                    book.getTitle(),
+                    fine,
+                    recordId
+            );
+        }
 
         return toResponse(record);
     }
